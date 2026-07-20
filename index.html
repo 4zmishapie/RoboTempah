@@ -289,6 +289,7 @@ table.slotgrid td.time{
       <a data-page="book" onclick="go('book')"><span class="ic">➕</span> Tempah Bilik</a>
       <a data-page="jadual" onclick="go('jadual')"><span class="ic">🗓️</span> Jadual Bilik</a>
       <a data-page="senarai" onclick="go('senarai')"><span class="ic">📋</span> Semua Tempahan</a>
+      <a data-page="saya" onclick="go('saya')"><span class="ic">🧾</span> Tempahan Saya</a>
       <div class="nav-label adminonly hidden" style="margin-top:12px">Pentadbir</div>
       <a class="adminonly hidden" data-page="urus" onclick="go('urus')"><span class="ic">🛠️</span> Urus Tempahan</a>
       <a class="adminonly hidden" data-page="tetapan" onclick="go('tetapan')"><span class="ic">⚙️</span> Tetapan</a>
@@ -296,7 +297,7 @@ table.slotgrid td.time{
 
     <div class="side-foot">
       <div class="pill-status" id="conn"><i></i><span>Mod demo</span></div>
-      <div>Dibina oleh <b>4zmishapie 2026 "SKK DIHATI"</b></div>
+      <div>Dibina oleh <b>4zmishapie</b></div>
     </div>
   </aside>
 
@@ -388,17 +389,36 @@ table.slotgrid td.time{
       </div>
     </section>
 
+    <!-- ---------- TEMPAHAN SAYA ---------- -->
+    <section class="page" id="p-saya">
+      <div class="card">
+        <h3>🧾 Tempahan saya</h3>
+        <div class="field" style="max-width:340px">
+          <label for="fNamaSaya">Pilih nama anda</label>
+          <select id="fNamaSaya" onchange="renderSaya()"></select>
+        </div>
+        <p style="color:var(--cream-dim);font-size:12.5px;line-height:1.7;margin:0 0 16px">
+          Anda boleh batalkan tempahan sendiri selagi sesi belum bermula.
+          Sesi yang dah berlalu perlu dirujuk kepada admin.
+        </p>
+        <div id="listSaya"></div>
+      </div>
+    </section>
+
     <!-- ---------- URUS (admin) ---------- -->
     <section class="page" id="p-urus">
       <div class="card">
-        <h3>🛠️ Urus tempahan <button class="btn ghost sm" style="margin-left:auto" onclick="exportCSV()">⬇ Muat turun CSV</button></h3>
+        <h3>🛠️ Urus tempahan
+          <button class="btn ghost sm" id="btnBatal" style="margin-left:auto" onclick="togolBatal()">👁 Papar yang dibatalkan</button>
+          <button class="btn ghost sm" onclick="exportCSV()">⬇ Muat turun CSV</button>
+        </h3>
         <div id="listAdmin"></div>
       </div>
     </section>
 
     <!-- ---------- TETAPAN (admin) ---------- -->
     <section class="page" id="p-tetapan">
-      <div class="two-col">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(330px,1fr))">
         <div class="card">
           <h3>🔌 Sambungan backend</h3>
           <div class="field">
@@ -435,15 +455,35 @@ table.slotgrid td.time{
         </div>
 
         <div class="card">
-          <h3>📚 Senarai guru &amp; bilik</h3>
-          <p style="color:var(--muted);font-size:12.5px;line-height:1.7;margin:0 0 12px">
-            Senarai ni diset secara manual dalam <code>CONFIG</code> di bahagian atas fail <code>index.html</code>
-            (atau ditarik dari sheet <b>Guru</b> dan <b>Bilik</b> bila backend disambung).
-          </p>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Bilik</div>
-          <div class="chiprow" id="listBilik"></div>
-          <div style="font-size:12px;color:var(--muted);margin:14px 0 6px">Guru</div>
+          <h3>👩‍🏫 Urus senarai guru</h3>
+          <div class="field" style="margin-bottom:10px">
+            <label for="fGuruBaru">Nama guru</label>
+            <input id="fGuruBaru" placeholder="Cth: Cikgu Aminah" onkeydown="if(event.key==='Enter')tambahGuru()">
+          </div>
+          <button class="btn sm" style="width:100%;margin-bottom:14px" onclick="tambahGuru()">+ Tambah guru</button>
+          <div style="font-size:12px;color:var(--cream-dim);margin-bottom:6px">
+            Senarai semasa (<span id="bilGuru">0</span>) — klik × untuk buang
+          </div>
           <div class="chiprow" id="listGuru"></div>
+          <button class="btn sm" style="width:100%;margin-top:14px" onclick="simpanGuru()">Simpan senarai guru</button>
+        </div>
+
+        <div class="card">
+          <h3>🚪 Urus senarai bilik</h3>
+          <div class="field" style="margin-bottom:10px">
+            <label for="fBilikBaru">Nama bilik</label>
+            <input id="fBilikBaru" placeholder="Cth: Bilik Muzik" onkeydown="if(event.key==='Enter')tambahBilik()">
+          </div>
+          <button class="btn sm" style="width:100%;margin-bottom:14px" onclick="tambahBilik()">+ Tambah bilik</button>
+          <div style="font-size:12px;color:var(--cream-dim);margin-bottom:6px">
+            Senarai semasa (<span id="bilBilik">0</span>) — klik × untuk buang
+          </div>
+          <div class="chiprow" id="listBilik"></div>
+          <p style="color:var(--cream-dim);font-size:11.5px;line-height:1.65;margin:12px 0 0">
+            ⚠️ Warna bilik diberi ikut susunan senarai. Buang bilik di tengah akan
+            menganjakkan warna bilik selepasnya.
+          </p>
+          <button class="btn sm" style="width:100%;margin-top:12px" onclick="simpanBilik()">Simpan senarai bilik</button>
         </div>
       </div>
     </section>
@@ -458,7 +498,7 @@ table.slotgrid td.time{
    ========================================================================= */
 const CONFIG = {
   // Tampal URL Web App GAS di sini supaya kekal (kosongkan = mod demo)
-  API_URL: "https://script.google.com/macros/s/AKfycbxF_XHj0kobvsF07JPtuo1xyx9SnUe0zYGBjI2RKqQJUz5VQYzI2LOcLOE_TlfUbDiooA/exec",
+  API_URL: "",
 
   // PIN mod demo sahaja. Bila backend disambung, PIN dibaca dari
   // sheet "Tetapan" (baris PIN) dan disemak sepenuhnya di Code.gs.
@@ -538,12 +578,20 @@ async function api(action, params={}){
     await new Promise(r=>setTimeout(r,140));
     if(action==="list")   return {ok:true,data:DEMO};
     if(action==="book"){
-      const bentrok = DEMO.find(b=>b.tarikh===params.tarikh && b.bilik===params.bilik && b.slot===params.slot);
+      const bentrok = DEMO.find(b=>b.tarikh===params.tarikh && b.bilik===params.bilik
+                                 && b.slot===params.slot && (b.status||"Aktif")!=="Dibatalkan");
       if(bentrok) return {ok:false,error:`Slot ${params.slot} dah ditempah oleh ${bentrok.nama}.`};
-      DEMO.push({id:"D"+Date.now()+Math.random().toString(36).slice(2,6),...params});
+      DEMO.push({id:"D"+Date.now()+Math.random().toString(36).slice(2,6),status:"Aktif",...params});
       return {ok:true};
     }
-    if(action==="cancel"){ DEMO=DEMO.filter(b=>b.id!==params.id); return {ok:true}; }
+    if(action==="cancel"){
+      const b=DEMO.find(x=>x.id===params.id);
+      if(!b) return {ok:false,error:"Rekod tidak dijumpai."};
+      if(!params.pin && String(params.nama||"")!==b.nama)
+        return {ok:false,error:"Tempahan ini bukan atas nama anda."};
+      b.status="Dibatalkan"; b.batalOleh=params.pin?"Admin":b.nama;
+      return {ok:true};
+    }
     return {ok:true};
   }
   const q = new URLSearchParams({action,...params});
@@ -558,6 +606,7 @@ const TITLES = {
   book:["Tempah Bilik","Pilih bilik, kemudian klik slot masa yang kosong"],
   jadual:["Jadual Bilik","Pandangan penuh semua bilik dan slot"],
   senarai:["Semua Tempahan","Rekod tempahan pada tarikh dipilih"],
+  saya:["Tempahan Saya","Semak dan batalkan tempahan atas nama anda"],
   urus:["Urus Tempahan","Batalkan atau muat turun rekod tempahan"],
   tetapan:["Tetapan","Sambungan backend serta senarai guru dan bilik"]
 };
@@ -625,18 +674,32 @@ async function loadAll(manual){
   }catch(e){ toast("Tak dapat hubungi backend: "+e.message,true); }
   render();
 }
-const bookingsHari = () => BOOKINGS.filter(b=>b.tarikh===$("#tarikh").value);
+const aktif = b => (b.status||"Aktif")!=="Dibatalkan";
+const bookingsHari = () => BOOKINGS.filter(b=>b.tarikh===$("#tarikh").value && aktif(b));
+
+/* Adakah sesi ini dah bermula? */
+function dahBermula(b){
+  const kini=new Date();
+  const pad=n=>String(n).padStart(2,"0");
+  const sekarang=`${kini.getFullYear()}-${pad(kini.getMonth()+1)}-${pad(kini.getDate())} ${pad(kini.getHours())}:${pad(kini.getMinutes())}`;
+  return `${b.tarikh} ${b.slot.split("-")[0].trim()}` <= sekarang;
+}
 
 /* ========================= RENDER ========================= */
-function isiPilihan(){
+function isiDropdown(){
+  const sayaCur=$("#fNamaSaya").value;
+  $("#fNamaSaya").innerHTML = CONFIG.GURU.map(g=>`<option>${esc(g)}</option>`).join("");
+  if(sayaCur&&CONFIG.GURU.includes(sayaCur)) $("#fNamaSaya").value=sayaCur;
+
+  const guruCur=$("#fNama").value;
   $("#fNama").innerHTML  = CONFIG.GURU.map(g=>`<option>${esc(g)}</option>`).join("");
+  if(guruCur&&CONFIG.GURU.includes(guruCur)) $("#fNama").value=guruCur;
+
   const cur=$("#fBilik").value;
   $("#fBilik").innerHTML = CONFIG.BILIK.map(b=>`<option>${esc(b)}</option>`).join("");
   if(cur&&CONFIG.BILIK.includes(cur)) $("#fBilik").value=cur;
-  $("#listBilik").innerHTML = CONFIG.BILIK.map(b=>{const c=warnaBilik(b);
-    return `<span class="chip" style="color:${c};border-color:${c}66;background:${c}1A">${esc(b)}</span>`;}).join("");
-  $("#listGuru").innerHTML  = CONFIG.GURU.map(g=>`<span class="chip">${esc(g)}</span>`).join("");
 }
+function isiPilihan(){ isiDropdown(); renderSenaraiAdmin(); }
 
 /* ---- Warna identiti setiap bilik ---- */
 const warnaBilik = b => {
@@ -712,6 +775,89 @@ function pilih(s){
 }
 function buang(s){ PICKED=PICKED.filter(x=>x!==s); renderBookGrid(); }
 
+/* ---- Urus senarai guru & bilik (admin sahaja) ---- */
+function renderSenaraiAdmin(){
+  const lg=$("#listGuru"), lb=$("#listBilik");
+  if(lg){
+    $("#bilGuru").textContent=CONFIG.GURU.length;
+    lg.innerHTML = CONFIG.GURU.length
+      ? CONFIG.GURU.map(g=>`<span class="chip">${esc(g)} <b style="cursor:pointer;color:var(--danger)" onclick="buangGuru('${esc(g).replace(/'/g,"\\'")}')">×</b></span>`).join("")
+      : `<span class="chip">Belum ada guru dalam senarai.</span>`;
+  }
+  if(lb){
+    $("#bilBilik").textContent=CONFIG.BILIK.length;
+    lb.innerHTML = CONFIG.BILIK.length
+      ? CONFIG.BILIK.map(b=>{const c=warnaBilik(b);
+          return `<span class="chip" style="color:${c};border-color:${c}66;background:${c}1A">${esc(b)}
+            <b style="cursor:pointer;color:var(--danger)" onclick="buangBilik('${esc(b).replace(/'/g,"\\'")}')">×</b></span>`;}).join("")
+      : `<span class="chip">Belum ada bilik dalam senarai.</span>`;
+  }
+}
+
+/* Kira tempahan akan datang bagi satu bilik — asas amaran sebelum buang */
+function tempahanAkanDatang(bilik){
+  const hariIni=today();
+  return BOOKINGS.filter(b=>b.bilik===bilik && b.tarikh>=hariIni);
+}
+
+function tambahGuru(){
+  const n=$("#fGuruBaru").value.trim();
+  if(!n) return toast("Isi nama guru dulu.",true);
+  if(CONFIG.GURU.some(g=>g.toLowerCase()===n.toLowerCase()))
+    return toast("Nama ini dah ada dalam senarai.",true);
+  CONFIG.GURU.push(n); $("#fGuruBaru").value="";
+  renderSenaraiAdmin(); isiDropdown();
+  toast(`${n} ditambah. Tekan Simpan untuk kekalkan.`);
+}
+function buangGuru(n){
+  CONFIG.GURU=CONFIG.GURU.filter(g=>g!==n);
+  renderSenaraiAdmin(); isiDropdown();
+  toast(`${n} dibuang. Tempahan lalu dia tak terjejas.`);
+}
+async function simpanGuru(){
+  if(!CONFIG.GURU.length) return toast("Senarai guru kosong.",true);
+  if(!API) return toast("Mod demo — perubahan hanya kekal sehingga refresh.");
+  try{
+    const r=await api("setguru",{list:CONFIG.GURU.join("|"),pin:PIN});
+    r.ok?toast(`${CONFIG.GURU.length} nama guru disimpan ke Sheet.`):toast(r.error||"Gagal simpan.",true);
+  }catch(e){ toast("Gagal simpan: "+e.message,true); }
+  loadAll();
+}
+
+function tambahBilik(){
+  const n=$("#fBilikBaru").value.trim();
+  if(!n) return toast("Isi nama bilik dulu.",true);
+  if(CONFIG.BILIK.some(b=>b.toLowerCase()===n.toLowerCase()))
+    return toast("Bilik ini dah ada dalam senarai.",true);
+  CONFIG.BILIK.push(n); $("#fBilikBaru").value="";
+  renderSenaraiAdmin(); isiDropdown();
+  toast(`${n} ditambah. Tekan Simpan untuk kekalkan.`);
+}
+function buangBilik(n){
+  const kena=tempahanAkanDatang(n);
+  if(kena.length){
+    const senarai=kena.slice(0,4).map(b=>`• ${b.tarikh} ${b.slot} — ${b.nama}`).join("\n");
+    const lagi=kena.length>4?`\n… dan ${kena.length-4} lagi`:"";
+    if(!confirm(
+      `⚠️ ${n} ada ${kena.length} tempahan akan datang:\n\n${senarai}${lagi}\n\n`+
+      `Kalau bilik ini dibuang, tempahan tersebut akan hilang dari paparan. `+
+      `Data masih kekal dalam sheet Tempahan dan akan muncul semula kalau bilik ini `+
+      `ditambah balik dengan ejaan yang sama.\n\nTeruskan buang?`)) return;
+  }
+  CONFIG.BILIK=CONFIG.BILIK.filter(b=>b!==n);
+  renderSenaraiAdmin(); isiDropdown();
+  toast(`${n} dibuang dari senarai.`);
+}
+async function simpanBilik(){
+  if(!CONFIG.BILIK.length) return toast("Senarai bilik kosong.",true);
+  if(!API) return toast("Mod demo — perubahan hanya kekal sehingga refresh.");
+  try{
+    const r=await api("setbilik",{list:CONFIG.BILIK.join("|"),pin:PIN});
+    r.ok?toast(`${CONFIG.BILIK.length} bilik disimpan ke Sheet.`):toast(r.error||"Gagal simpan.",true);
+  }catch(e){ toast("Gagal simpan: "+e.message,true); }
+  loadAll();
+}
+
 /* ---- Urus slot masa (admin sahaja) ---- */
 function renderSlotAdmin(){
   $("#bilSlot").textContent=CONFIG.SLOT.length;
@@ -782,6 +928,13 @@ function renderDash(){
 
 function bkgHTML(b,admin){
   const c=warnaBilik(b.bilik);
+  const batal=!aktif(b);
+  if(batal) return `<div class="bkg" style="border-left:4px solid var(--danger);opacity:.6">
+    <div class="tm" style="color:var(--danger)">${esc(b.slot)}</div>
+    <div><div class="rm" style="text-decoration:line-through">${esc(b.bilik)}</div>
+      <div class="nm">${esc(b.nama)} · dibatalkan oleh ${esc(b.batalOleh||'—')}</div></div>
+    <div class="rt"><span class="chip" style="color:var(--danger);border-color:var(--danger)">Dibatalkan</span></div>
+  </div>`;
   return `<div class="bkg" style="border-left:4px solid ${c}">
     <div class="tm" style="color:${c}">${esc(b.slot)}</div>
     <div><div class="rm"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c};margin-right:7px"></span>${esc(b.bilik)}</div><div class="nm">${esc(b.nama)}${b.tujuan?" · "+esc(b.tujuan):""}</div></div>
@@ -789,9 +942,63 @@ function bkgHTML(b,admin){
   </div>`;
 }
 function renderSenarai(el,admin){
-  const bs=bookingsHari().slice().sort((a,b)=>a.slot.localeCompare(b.slot));
+  const tarikh=$("#tarikh").value;
+  let bs=BOOKINGS.filter(b=>b.tarikh===tarikh && (aktif(b) || (admin&&TUNJUK_BATAL)));
+  bs=bs.slice().sort((a,b)=>a.slot.localeCompare(b.slot));
   el.innerHTML = bs.length ? bs.map(b=>bkgHTML(b,admin)).join("")
     : `<div class="empty"><span class="em">📭</span>Belum ada tempahan pada tarikh ini. Buka <b>Tempah Bilik</b> untuk mula.</div>`;
+}
+
+function renderSaya(){
+  const nama=$("#fNamaSaya").value;
+  const milik=BOOKINGS.filter(b=>b.nama===nama && aktif(b))
+    .sort((a,b)=>(a.tarikh+a.slot).localeCompare(b.tarikh+b.slot));
+  const akan=milik.filter(b=>!dahBermula(b));
+  const lalu=milik.filter(b=>dahBermula(b)).slice(-5).reverse();
+
+  let h="";
+  h += `<div style="font-size:12px;color:var(--cream-dim);margin-bottom:8px">Akan datang (${akan.length})</div>`;
+  h += akan.length
+    ? akan.map(b=>{
+        const c=warnaBilik(b.bilik);
+        return `<div class="bkg" style="border-left:4px solid ${c}">
+          <div class="tm" style="color:${c}">${esc(b.tarikh)}<br><small style="opacity:.8">${esc(b.slot)}</small></div>
+          <div><div class="rm">${esc(b.bilik)}</div><div class="nm">${esc(b.tujuan||'Tiada catatan')}</div></div>
+          <div class="rt"><button class="btn danger sm" onclick="batalSendiri('${esc(b.id)}')">Batalkan</button></div>
+        </div>`;
+      }).join("")
+    : `<div class="empty"><span class="em">🫧</span>Tiada tempahan akan datang atas nama ini.</div>`;
+
+  if(lalu.length){
+    h += `<div style="font-size:12px;color:var(--cream-dim);margin:18px 0 8px">Sesi lepas (5 terkini) — hubungi admin jika perlu diubah</div>`;
+    h += lalu.map(b=>{
+      const c=warnaBilik(b.bilik);
+      return `<div class="bkg" style="border-left:4px solid ${c};opacity:.55">
+        <div class="tm" style="color:${c}">${esc(b.tarikh)}<br><small style="opacity:.8">${esc(b.slot)}</small></div>
+        <div><div class="rm">${esc(b.bilik)}</div><div class="nm">${esc(b.tujuan||'Tiada catatan')}</div></div>
+      </div>`;
+    }).join("");
+  }
+  $("#listSaya").innerHTML=h;
+}
+
+async function batalSendiri(id){
+  const b=BOOKINGS.find(x=>x.id===id);
+  if(!b) return;
+  if(!confirm(`Batalkan tempahan ${b.bilik} pada ${b.tarikh}, ${b.slot}?\n\nSlot ini akan terbuka semula untuk guru lain.`)) return;
+  try{
+    const r=await api("cancel",{id,nama:b.nama});
+    r.ok?toast("Tempahan dibatalkan. Slot dah terbuka semula."):toast(r.error||"Gagal membatalkan.",true);
+  }catch(e){ toast("Gagal membatalkan: "+e.message,true); }
+  await loadAll(); renderSaya();
+}
+
+/* ---- Papar rekod dibatalkan (admin) ---- */
+let TUNJUK_BATAL=false;
+function togolBatal(){
+  TUNJUK_BATAL=!TUNJUK_BATAL;
+  $("#btnBatal").textContent = TUNJUK_BATAL ? "👁 Sembunyikan yang dibatalkan" : "👁 Papar yang dibatalkan";
+  render();
 }
 
 function render(){
@@ -803,8 +1010,9 @@ function render(){
       return `<span class="chip" style="color:${c};border-color:${c}66;background:${c}1A">${esc(b)}</span>`;}).join("");
   }
   if(PAGE==="senarai") renderSenarai($("#listAll"),false);
+  if(PAGE==="saya")    renderSaya();
   if(PAGE==="urus")    renderSenarai($("#listAdmin"),true);
-  if(PAGE==="tetapan") renderSlotAdmin();
+  if(PAGE==="tetapan"){ renderSlotAdmin(); renderSenaraiAdmin(); }
 }
 function onDate(){ PICKED=[]; render(); }
 
@@ -834,14 +1042,14 @@ async function batal(id){
   const b=BOOKINGS.find(x=>x.id===id);
   if(!confirm(`Batalkan tempahan ${b?b.bilik+" "+b.slot:""}?`)) return;
   const r=await api("cancel",{id,pin:PIN});
-  r.ok?toast("Tempahan dibatalkan."):toast(r.error||"Gagal membatalkan.",true);
+  r.ok?toast("Tempahan ditanda sebagai dibatalkan. Rekod kekal dalam Sheet."):toast(r.error||"Gagal membatalkan.",true);
   loadAll();
 }
 function exportCSV(){
-  const bs=bookingsHari();
+  const bs=BOOKINGS.filter(b=>b.tarikh===$("#tarikh").value);
   if(!bs.length) return toast("Tiada rekod untuk dimuat turun.",true);
-  const rows=[["Tarikh","Masa","Bilik","Nama","Tujuan"],
-    ...bs.map(b=>[b.tarikh,b.slot,b.bilik,b.nama,b.tujuan||""])];
+  const rows=[["Tarikh","Masa","Bilik","Nama","Tujuan","Status","Dibatalkan Oleh"],
+    ...bs.map(b=>[b.tarikh,b.slot,b.bilik,b.nama,b.tujuan||"",b.status||"Aktif",b.batalOleh||""])];
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv"}));
@@ -865,9 +1073,9 @@ async function simpanApi(){
   else{
     // data contoh untuk mod demo
     DEMO=[
-      {id:"D1",tarikh:today(),bilik:CONFIG.BILIK[0],slot:CONFIG.SLOT[2],nama:CONFIG.GURU[0],tujuan:"PdPc RBT Tahun 6"},
-      {id:"D2",tarikh:today(),bilik:CONFIG.BILIK[1],slot:CONFIG.SLOT[4],nama:CONFIG.GURU[1],tujuan:"Eksperimen Sains"},
-      {id:"D3",tarikh:today(),bilik:CONFIG.BILIK[2],slot:CONFIG.SLOT[5],nama:CONFIG.GURU[2],tujuan:"Mesyuarat Panitia"}
+      {id:"D1",tarikh:today(),bilik:CONFIG.BILIK[0],slot:CONFIG.SLOT[2],nama:CONFIG.GURU[0],tujuan:"PdPc RBT Tahun 6",status:"Aktif"},
+      {id:"D2",tarikh:today(),bilik:CONFIG.BILIK[1],slot:CONFIG.SLOT[4],nama:CONFIG.GURU[1],tujuan:"Eksperimen Sains",status:"Aktif"},
+      {id:"D3",tarikh:today(),bilik:CONFIG.BILIK[2],slot:CONFIG.SLOT[5],nama:CONFIG.GURU[2],tujuan:"Mesyuarat Panitia",status:"Aktif"}
     ];
   }
   loadAll();
