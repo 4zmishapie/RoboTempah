@@ -714,8 +714,9 @@ function isiDropdown(){
 function isiPilihan(){ isiDropdown(); renderSenaraiAdmin(); }
 
 /* ---- Warna identiti setiap bilik ---- */
+const kanon = s => String(s||"").trim().toLowerCase().replace(/\s+/g," ");
 const warnaBilik = b => {
-  const i = CONFIG.BILIK.indexOf(b);
+  const i = CONFIG.BILIK.findIndex(x => kanon(x)===kanon(b));
   return CONFIG.WARNA[(i < 0 ? 0 : i) % CONFIG.WARNA.length];
 };
 const gayaTempah = c =>
@@ -726,7 +727,7 @@ const mins  = t => { const p=String(t).trim().split(":"); const h=+p[0]||0,m=+p[
 const julat = s => { const p=String(s).split("-"); const a=mins(p[0]), z=mins(p[1]!==undefined?p[1]:p[0]); return [a, z>a?z:a+1]; };
 const tindih = (a,b) => { const [a1,a2]=julat(a),[b1,b2]=julat(b); return a1<b2 && b1<a2; };
 const cariTindih = (bilik,masa,senarai) =>
-  (senarai||bookingsHari()).find(x => x.bilik===bilik && tindih(x.slot,masa));
+  (senarai||bookingsHari()).find(x => kanon(x.bilik)===kanon(bilik) && tindih(x.slot,masa));
 
 /* Grid penuh: baris = slot rujukan, lajur = bilik */
 function gridHTML(){
@@ -809,7 +810,7 @@ function renderSenaraiAdmin(){
 /* Kira tempahan akan datang bagi satu bilik — asas amaran sebelum buang */
 function tempahanAkanDatang(bilik){
   const hariIni=today();
-  return BOOKINGS.filter(b=>b.bilik===bilik && b.tarikh>=hariIni);
+  return BOOKINGS.filter(b=>kanon(b.bilik)===kanon(bilik) && aktif(b) && normTarikh(b.tarikh)>=hariIni);
 }
 
 function tambahGuru(){
@@ -959,7 +960,7 @@ function bkgHTML(b,admin,sesiAktif){
 }
 function renderSenarai(el,admin){
   const tarikh=$("#tarikh").value;
-  let bs=BOOKINGS.filter(b=>b.tarikh===tarikh && (aktif(b) || (admin&&TUNJUK_BATAL)));
+  let bs=BOOKINGS.filter(b=>normTarikh(b.tarikh)===tarikh && (aktif(b) || (admin&&TUNJUK_BATAL)));
   bs=bs.slice().sort((a,b)=>a.slot.localeCompare(b.slot));
   el.innerHTML = bs.length ? bs.map(b=>bkgHTML(b,admin)).join("")
     : `<div class="empty"><span class="em">📭</span>Belum ada tempahan pada tarikh ini. Buka <b>Tempah Bilik</b> untuk mula.</div>`;
@@ -967,7 +968,7 @@ function renderSenarai(el,admin){
 
 function renderSaya(){
   const nama=$("#fNamaSaya").value;
-  const milik=BOOKINGS.filter(b=>b.nama===nama && aktif(b))
+  const milik=BOOKINGS.filter(b=>kanon(b.nama)===kanon(nama) && aktif(b))
     .sort((a,b)=>(a.tarikh+a.slot).localeCompare(b.tarikh+b.slot));
   const akan=milik.filter(b=>!dahBermula(b));
   const lalu=milik.filter(b=>dahBermula(b)).slice(-5).reverse();
