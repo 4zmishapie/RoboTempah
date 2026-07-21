@@ -232,6 +232,8 @@ table.slotgrid td.time{
 .bkg .rm{font-weight:600;font-size:14px;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bkg .nm{color:var(--cream-dim);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bkg .rt{margin-left:auto;display:flex;gap:8px;align-items:center;flex:0 0 auto}
+.bkg .rt .chip{white-space:nowrap;font-size:11px;padding:5px 10px}
+.bkg .tm{white-space:nowrap}
 .empty{text-align:center;padding:34px 12px;color:var(--muted);font-size:13.5px}
 .empty .em{font-size:36px;display:block;margin-bottom:10px;opacity:.6}
 
@@ -931,12 +933,12 @@ function renderDash(){
     return m(a)<=now&&now<m(z);
   }):[];
   $("#nowList").innerHTML = aktif.length
-    ? aktif.map(b=>bkgHTML(b,false)).join("")
+    ? aktif.map(b=>bkgHTML(b,false,true)).join("")
     : `<div class="empty"><span class="em">🫧</span>${isToday?"Tiada bilik sedang digunakan sekarang.":"Pilih tarikh hari ini untuk lihat sesi langsung."}</div>`;
   $("#dashGrid").innerHTML=gridHTML();
 }
 
-function bkgHTML(b,admin){
+function bkgHTML(b,admin,sesiAktif){
   const c=warnaBilik(b.bilik);
   const batal=!aktif(b);
   if(batal) return `<div class="bkg" style="border-left:4px solid var(--danger);opacity:.6">
@@ -945,10 +947,14 @@ function bkgHTML(b,admin){
       <div class="nm">${esc(b.nama)} · dibatalkan oleh ${esc(b.batalOleh||'—')}</div></div>
     <div class="rt"><span class="chip" style="color:var(--danger);border-color:var(--danger)">Dibatalkan</span></div>
   </div>`;
+  let kanan;
+  if(admin) kanan=`<button class="btn danger sm" onclick="batal('${esc(b.id)}')">Batalkan</button>`;
+  else if(sesiAktif) kanan=`<span class="chip" style="color:var(--guru);border-color:rgba(46,199,190,.5)">● Kini</span>`;
+  else kanan=`<span class="chip">${esc(normTarikh(b.tarikh))}</span>`;
   return `<div class="bkg" style="border-left:4px solid ${c}">
     <div class="tm" style="color:${c}">${esc(b.slot)}</div>
     <div><div class="rm"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c};margin-right:7px"></span>${esc(b.bilik)}</div><div class="nm">${esc(b.nama)}${b.tujuan?" · "+esc(b.tujuan):""}</div></div>
-    <div class="rt">${admin?`<button class="btn danger sm" onclick="batal('${esc(b.id)}')">Batalkan</button>`:`<span class="chip">${esc(b.tarikh)}</span>`}</div>
+    <div class="rt">${kanan}</div>
   </div>`;
 }
 function renderSenarai(el,admin){
